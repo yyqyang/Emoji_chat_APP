@@ -8,26 +8,36 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.firebaseproject.Model.Chat;
+import com.example.firebaseproject.Model.Users;
+import com.example.firebaseproject.UserAdapter.MessageAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class MessageActivity extends AppCompatActivity {
     TextView username;
@@ -37,12 +47,18 @@ public class MessageActivity extends AppCompatActivity {
     DatabaseReference reference;
     Intent intent;
 
+    MessageAdapter messageAdapter;
+    List<Chat> mchat;
+    RecyclerView recyclerView;
+
+
+
 
     FirebaseStorage mStorage;
     String url;
     StorageReference storageRef;
 
-    RecyclerView recyclerView;
+
 
 
     @Override
@@ -75,8 +91,17 @@ public class MessageActivity extends AppCompatActivity {
                 // Handle any errors
             }
         });
-
         username = findViewById(R.id.username_meassge);
+        recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setHasFixedSize(true);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+        linearLayoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+
+
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
@@ -93,25 +118,27 @@ public class MessageActivity extends AppCompatActivity {
         String userid = intent.getStringExtra("userid");
         fuser = FirebaseAuth.getInstance().getCurrentUser();
         reference = FirebaseDatabase.getInstance().getReference("Myusers").child(userid);
-        //reference.addValueEventListener(new ValueEventListener() {
-          //  @Override
-          //  public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-           //       Users user = dataSnapshot.getValue(Users.class);
-           //       username.setText(user.getUsername());
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                  Users user = dataSnapshot.getValue(Users.class);
+            //       username.setText(user.getUsername());
 
-          //      if (user.getImageURL().equals("default")) {
-          //          imageView.setImageResource(R.mipmap.ic_launcher);
-         //       } else {
-         //           Glide.with(MessageActivity.this)
-          //                  .load(user.getImageURL())
-          //                  .into(imageView);
-          //      }
-          //  }
+            //      if (user.getImageURL().equals("default")) {
+            //          imageView.setImageResource(R.mipmap.ic_launcher);
+            //       } else {
+            //           Glide.with(MessageActivity.this)
+            //                  .load(user.getImageURL())
+            //                  .into(imageView);
+            //      }
+            readMessage(fuser.getUid(),userid,user.getImageURL());
+        }
 
-         //   @Override
-           // public void onCancelled(@NonNull DatabaseError error){
-        //        }
-          //  });
+            @Override
+            public void onCancelled(@NonNull DatabaseError error){
+                }
+            });
+
         button_load.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,6 +160,32 @@ public class MessageActivity extends AppCompatActivity {
         hashMap.put("receiver",receiver);
         hashMap.put("message",message);
         reference.child("Chats").push().setValue(hashMap);
+    }
+
+    private void readMessage(String myid,String userid,String imageurl){
+        mchat = new ArrayList<>();
+        reference =FirebaseDatabase.getInstance().getReference("Chats");
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                mchat.clear();
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    Chat chat =snapshot.getValue(Chat.class);
+                    if(chat.getReceiver().equals(myid)&&chat.getSender().equals(userid)||
+                            chat.getReceiver().equals(userid)&&chat.getSender().equals(myid)){
+                        mchat.add(chat);
+                    }
+                    messageAdapter = new MessageAdapter(MessageActivity.this,mchat,imageurl);
+                    recyclerView.setAdapter(messageAdapter);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
     }
 
 }
