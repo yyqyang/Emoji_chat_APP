@@ -9,7 +9,8 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="welcome to chat fragment"
+        android:text="welcome to emoji chat app. Go to the User page and select the user you would like
+to send stickers"
         android:textSize="30sp" />
 
 </FrameLayout>

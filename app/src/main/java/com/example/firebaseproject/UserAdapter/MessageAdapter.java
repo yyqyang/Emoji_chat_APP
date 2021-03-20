@@ -23,6 +23,7 @@ import com.example.firebaseproject.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.auth.User;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, int position) {
         Chat chat =mChat.get(position);
-        holder.show_message.setText(chat.getMessage());
+        //holder.show_message.setText(chat.getMessage());
+
+        Glide.with(context)
+                .load(chat.getMessage())
+                .into(holder.show_message);
+
         if(imgURL.equals("default")){
             holder.profile_image.setImageResource(R.mipmap.ic_launcher);
 
@@ -76,12 +82,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     }
 
+
     @Override
     public int getItemCount() {
         return mChat.size();
     }
     public class ViewHolder extends RecyclerView.ViewHolder{
-        public TextView show_message;
+        public ImageView show_message;
         public ImageView profile_image;
         public ViewHolder(@NonNull View itemView){
             super(itemView);

@@ -3,6 +3,7 @@ package com.example.firebaseproject;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,12 +16,14 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class Login_Activity extends AppCompatActivity {
     EditText userETLogin;
     Button loginBtn;
     Button tologinBtn;
     FirebaseAuth auth;
+    FirebaseUser firebaseUser;
     final String password = "aaaaaa";
 
     @Override
@@ -33,6 +36,12 @@ public class Login_Activity extends AppCompatActivity {
 
 
         auth = FirebaseAuth.getInstance();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+//        if(firebaseUser !=null){
+//            Intent i = new Intent(Login_Activity.this,MainActivity.class);
+//            startActivity(i);
+//            finish();
+//        }
 
         tologinBtn.setOnClickListener(new View.OnClickListener(){
             @Override

@@ -59,9 +59,33 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
-
-
             android:background="@drawable/ic_launcher_foreground" />
+        <ImageButton
+            android:id="@+id/btn_send2"
+            android:layout_width="97dp"
+            android:layout_height="83dp"
+
+            android:layout_toLeftOf="@+id/btn_send"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/ic_launcher_foreground" />
+        <ImageButton
+            android:id="@+id/btn_send3"
+            android:layout_width="97dp"
+            android:layout_height="83dp"
+
+            android:layout_toLeftOf="@+id/btn_send2"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/ic_launcher_foreground" />
+        <ImageButton
+            android:id="@+id/btn_send4"
+            android:layout_width="97dp"
+            android:layout_height="83dp"
+
+            android:layout_toLeftOf="@+id/btn_send3"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/ic_launcher_foreground" />
+
+
 
     </RelativeLayout>
 

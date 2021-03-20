@@ -44,7 +44,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull UserAdapter.ViewHolder holder, int position) {
         Users users = mUsers.get(position);
         holder.username.setText(users.getUsername());
         if(users.getImageURL().equals("default")){

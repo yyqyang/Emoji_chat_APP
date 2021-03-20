@@ -1,5 +1,6 @@
 package com.example.firebaseproject;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.firebaseproject.Model.Users;
 import com.example.firebaseproject.UserAdapter.UserAdapter;
@@ -25,12 +27,9 @@ import com.google.firebase.firestore.auth.User;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link UsersFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class UsersFragment extends Fragment {
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
@@ -58,7 +57,9 @@ public class UsersFragment extends Fragment {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot DataSnapshot) {
+
                 mUsers.clear();
+
                 for(DataSnapshot snapshot:DataSnapshot.getChildren()){
                     Users user = snapshot.getValue(Users.class);
                     assert user != null;
