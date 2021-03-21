@@ -26,6 +26,7 @@ public class Login_Activity extends AppCompatActivity {
     FirebaseUser firebaseUser;
     final String password = "aaaaaa";
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
