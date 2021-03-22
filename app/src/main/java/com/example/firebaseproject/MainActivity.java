@@ -1,14 +1,14 @@
 package com.example.firebaseproject;
 
+import android.os.Bundle;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
-
-import android.os.Bundle;
-import android.widget.Toast;
 
 import com.example.firebaseproject.Model.Users;
 import com.google.android.material.tabs.TabLayout;
@@ -19,14 +19,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.auth.User;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+
     FirebaseUser firebaseUser;
     DatabaseReference myRef;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,45 +52,45 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         ViewPager viewPager = findViewById(R.id.view_pager);
-        ViewPagerAdapter viewPagerAdapter= new ViewPagerAdapter(getSupportFragmentManager());
-        viewPagerAdapter.addFragment(new ChatFragment(),"chats");
-        viewPagerAdapter.addFragment(new UsersFragment(),"Users");
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPagerAdapter.addFragment(new ChatFragment(), "chats");
+        viewPagerAdapter.addFragment(new UsersFragment(), "Users");
 
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
-
-
     }
 
-}
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final ArrayList<Fragment> fragments;
+        private final ArrayList<String> titles;
 
-    class ViewPagerAdapter extends FragmentPagerAdapter{
-        private ArrayList<Fragment> fragments;
-        private ArrayList<String> titles;
-
-        ViewPagerAdapter(FragmentManager fm){
+        ViewPagerAdapter(FragmentManager fm) {
             super(fm);
             this.fragments = new ArrayList<>();
-            this.titles =new ArrayList<>();
-
+            this.titles = new ArrayList<>();
         }
+
         @NonNull
         @Override
-        public Fragment getItem(int position){
+        public Fragment getItem(int position) {
             return fragments.get(position);
         }
+
         @Override
-        public int getCount(){
+        public int getCount() {
             return fragments.size();
         }
-        public void addFragment(Fragment fragment,String title){
+
+        public void addFragment(Fragment fragment, String title) {
             fragments.add(fragment);
             titles.add(title);
         }
+
         @NonNull
         @Override
-        public  CharSequence getPageTitle(int position){
+        public CharSequence getPageTitle(int position) {
             return titles.get(position);
         }
-
     }
+}
+
