@@ -29,15 +29,12 @@ public class RegisterActivity extends AppCompatActivity {
     FirebaseAuth auth;
     DatabaseReference myRef;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         userET = findViewById(R.id.editTextName);
         emailET = findViewById(R.id.editTextEmail);
-        passwordET = findViewById(R.id.editTextPassword);
 
         registerBtn = findViewById(R.id.Registerbtn);
         auth = FirebaseAuth.getInstance();
@@ -47,7 +44,9 @@ public class RegisterActivity extends AppCompatActivity {
             public void onClick(View v){
                 String username_text = userET.getText().toString();
                 String email_text = emailET.getText().toString();
-                String password_text = passwordET.getText().toString();
+
+                // Use a predefined FIXED password that would be used to login later on
+                String password_text = Login_Activity.password;
 
                 if(TextUtils.isEmpty(username_text)||TextUtils.isEmpty(email_text)||TextUtils.isEmpty(password_text)){
                     Toast.makeText(RegisterActivity.this,"Please Fill The Username", Toast.LENGTH_SHORT)

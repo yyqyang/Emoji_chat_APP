@@ -24,8 +24,7 @@ public class Login_Activity extends AppCompatActivity {
     Button tologinBtn;
     FirebaseAuth auth;
     FirebaseUser firebaseUser;
-    final String password = "aaaaaa";
-
+    public static final String password = "aaaaaa";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
