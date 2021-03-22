@@ -3,10 +3,14 @@ package com.example.firebaseproject;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,16 +30,33 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 public class MessageActivity extends AppCompatActivity {
+
+    private static final String TAG = MessageActivity.class.getSimpleName();
+
+    private static final String SERVER_KEY = "key=AAAA0XcsDpE:APA91bFKqSVwgB4e38QVH4WWXHjXEFZVqTO5b1HajVuEaSWMGX2L6mEfaBgjqwJDatg9V3hPz8HE2p2Ao7vnGbLaTokN0IwOY9GUpLPszY0wwu9jUOpvkluZVU9b-LM9yb-6ZHHxJeUz";
+    private static final String CLIENT_REGISTRATION_TOKEN = "cUPw0s3VQ5WwM98eegBxOt:APA91bEusIfOReV5o6vPoIiq2Cv3W6wYSjgY-QLfD6C8E2N04uZ1NIj5pSudZPwITGNEZ0JDqEX5Ezm2ZBraCP8i-dYVRy4TV_L_1Eseae5ZxR8IR4tILNzSpXXIl1oZJVJ_v807YFgu";
+
     TextView username;
     ImageView imageView;
     ImageButton button_load;
@@ -204,6 +225,17 @@ public class MessageActivity extends AppCompatActivity {
                         sendMessage(fuser.getUid(), userid, link_happy);
                     }
                 });
+
+//                FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(MessageActivity.this, new OnSuccessListener<InstanceIdResult>() {
+//                    @Override
+//                    public void onSuccess(InstanceIdResult instanceIdResult) {
+//                        String token = instanceIdResult.getToken();
+//                        String msg = getString(R.string.msg_token_fmt, token);
+//                        Log.e("Token", token);
+//                        Toast.makeText(MessageActivity.this, msg, Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+                sendMessageToDeviceTask(CLIENT_REGISTRATION_TOKEN);
             }
         });
         button_load2.setOnClickListener(new View.OnClickListener() {
@@ -216,7 +248,7 @@ public class MessageActivity extends AppCompatActivity {
                         sendMessage(fuser.getUid(), userid, link_happy);
                     }
                 });
-
+                sendMessageToDeviceTask(CLIENT_REGISTRATION_TOKEN);
             }
         });
         button_load3.setOnClickListener(new View.OnClickListener() {
@@ -229,7 +261,7 @@ public class MessageActivity extends AppCompatActivity {
                         sendMessage(fuser.getUid(), userid, link_happy);
                     }
                 });
-
+                sendMessageToDeviceTask(CLIENT_REGISTRATION_TOKEN);
             }
         });
         button_load4.setOnClickListener(new View.OnClickListener() {
@@ -242,7 +274,7 @@ public class MessageActivity extends AppCompatActivity {
                         sendMessage(fuser.getUid(), userid, link_happy);
                     }
                 });
-
+                sendMessageToDeviceTask(CLIENT_REGISTRATION_TOKEN);
             }
         });
     }
@@ -284,6 +316,91 @@ public class MessageActivity extends AppCompatActivity {
 
     }
 
+    public void sendMessageToDeviceTask(String token) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                sendMessageToDevice(token);
+            }
+        }).start();
+    }
+
+    /**
+     * Pushes a notification to a given device-- in particular, this device,
+     * because that's what the instanceID token is defined to be.
+     */
+    private void sendMessageToDevice(String targetToken) {
+        JSONObject jPayload = new JSONObject();
+        JSONObject jNotification = new JSONObject();
+        JSONObject jdata = new JSONObject();
+        try {
+            jNotification.put("title", "Message Title");
+            jNotification.put("body", "Message body ");
+            jNotification.put("sound", "default");
+            jNotification.put("badge", "1");
+            /*
+            // We can add more details into the notification if we want.
+            // We happen to be ignoring them for this demo.
+            jNotification.put("click_action", "OPEN_ACTIVITY_1");
+            */
+            jdata.put("title", "data title");
+            jdata.put("content", "data content");
+
+            /***
+             * The Notification object is now populated.
+             * Next, build the Payload that we send to the server.
+             */
+
+            // If sending to a single client
+            jPayload.put("to", targetToken); // CLIENT_REGISTRATION_TOKEN);
+            jPayload.put("priority", "high");
+            jPayload.put("notification", jNotification);
+            jPayload.put("data", jdata);
+
+            /***
+             * The Payload object is now populated.
+             * Send it to Firebase to send the message to the appropriate recipient.
+             */
+            URL url = new URL("https://fcm.googleapis.com/fcm/send");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", SERVER_KEY);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+
+            // Send FCM message content.
+            OutputStream outputStream = conn.getOutputStream();
+            outputStream.write(jPayload.toString().getBytes());
+            outputStream.close();
+
+            // Read FCM response.
+            InputStream inputStream = conn.getInputStream();
+            final String resp = convertStreamToString(inputStream);
+
+            Handler h = new Handler(Looper.getMainLooper());
+            h.post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i(TAG, "run: " + resp);
+                    Toast.makeText(MessageActivity.this, resp, Toast.LENGTH_LONG).show();
+                }
+            });
+            Log.i(TAG, "Successfully sent notification to client: " + targetToken);
+        } catch (JSONException | IOException e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    /**
+     * Helper function
+     *
+     * @param is
+     * @return
+     */
+    private String convertStreamToString(InputStream is) {
+        Scanner s = new Scanner(is).useDelimiter("\\A");
+        return s.hasNext() ? s.next().replace(",", ",\n") : "";
+    }
 }
 
 
