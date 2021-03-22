@@ -1,10 +1,7 @@
 package com.example.firebaseproject.UserAdapter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.media.Image;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,25 +11,21 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import com.bumptech.glide.Glide;
 import com.example.firebaseproject.MessageActivity;
 import com.example.firebaseproject.Model.Users;
 import com.example.firebaseproject.R;
-import com.google.firebase.firestore.auth.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder>{
-    private Context context;
-    private List<Users> mUsers;
+public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
+    private final Context context;
+    private final List<Users> mUsers;
 
-    public UserAdapter(Context context ,List<Users> mUsers){
+    public UserAdapter(Context context, List<Users> mUsers) {
         this.context = context;
         this.mUsers = mUsers;
     }
-
 
     @NonNull
     @Override
@@ -47,10 +40,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder>{
     public void onBindViewHolder(@NonNull UserAdapter.ViewHolder holder, int position) {
         Users users = mUsers.get(position);
         holder.username.setText(users.getUsername());
-        if(users.getImageURL().equals("default")){
+        if (users.getImageURL().equals("default")) {
             holder.imageView.setImageResource(R.mipmap.ic_launcher);
 
-        }else {
+        } else {
             Glide.with(context)
                     .load(users.getImageURL())
                     .into(holder.imageView);
@@ -58,8 +51,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder>{
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(context,MessageActivity.class);
-                i.putExtra("userid",users.getId());
+                Intent i = new Intent(context, MessageActivity.class);
+                i.putExtra("userid", users.getId());
                 context.startActivity(i);
 
             }
@@ -70,10 +63,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder>{
     public int getItemCount() {
         return mUsers.size();
     }
-    public class ViewHolder extends RecyclerView.ViewHolder{
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView username;
         public ImageView imageView;
-        public ViewHolder(@NonNull View itemView){
+
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
             username = itemView.findViewById(R.id.textViewUser);
             imageView = itemView.findViewById(R.id.imageView);

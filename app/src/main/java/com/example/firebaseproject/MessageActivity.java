@@ -1,40 +1,19 @@
 package com.example.firebaseproject;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-import com.bumptech.glide.Glide;
 import com.example.firebaseproject.Model.Chat;
 import com.example.firebaseproject.Model.Users;
 import com.example.firebaseproject.UserAdapter.MessageAdapter;
@@ -52,17 +31,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MessageActivity extends AppCompatActivity {
-
     TextView username;
     ImageView imageView;
     ImageButton button_load;
@@ -77,29 +50,24 @@ public class MessageActivity extends AppCompatActivity {
     List<Chat> mchat;
     RecyclerView recyclerView;
 
-
     FirebaseStorage mStorage;
     String url;
     StorageReference storageRef;
     RemoteMessage remoteMessage;
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
 
-     //   imageView = findViewById(R.id.image_message);
-        button_load  = findViewById(R.id.btn_send);
-        button_load2  = findViewById(R.id.btn_send2);
-        button_load3  = findViewById(R.id.btn_send3);
-        button_load4  = findViewById(R.id.btn_send4);
+        //   imageView = findViewById(R.id.image_message);
+        button_load = findViewById(R.id.btn_send);
+        button_load2 = findViewById(R.id.btn_send2);
+        button_load3 = findViewById(R.id.btn_send3);
+        button_load4 = findViewById(R.id.btn_send4);
 
-        mStorage= FirebaseStorage.getInstance();
+        mStorage = FirebaseStorage.getInstance();
         storageRef = mStorage.getReferenceFromUrl("gs://citric-hawk-307721.appspot.com");
-
 
         storageRef.child("happy.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
@@ -119,7 +87,6 @@ public class MessageActivity extends AppCompatActivity {
                 // Handle any errors
             }
         });
-
 
         storageRef.child("embarrassed.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
@@ -186,7 +153,6 @@ public class MessageActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
 
 
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
@@ -198,10 +164,8 @@ public class MessageActivity extends AppCompatActivity {
             }
         });
 
-
         intent = getIntent();
         String userid = intent.getStringExtra("userid");
-
         fuser = FirebaseAuth.getInstance().getCurrentUser();
         reference = FirebaseDatabase.getInstance().getReference("MyUsers")
                 .child(fuser.getUid());
@@ -220,29 +184,26 @@ public class MessageActivity extends AppCompatActivity {
                     //            .load(user.getImageURL())
                     //            .into(imageView);
                 }
-                  Users user = dataSnapshot.getValue(Users.class);
+                Users user = dataSnapshot.getValue(Users.class);
 
-                  readMessage(fuser.getUid(),userid,user.getImageURL());
+                readMessage(fuser.getUid(), userid, user.getImageURL());
+            }
 
-        }
             @Override
-            public void onCancelled(@NonNull DatabaseError error){
-                }
-            });
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
 
         button_load.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 storageRef.child("happy.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
-                    public void onSuccess(Uri uri) { String link_happy = uri.toString();
-
-                    sendMessage(fuser.getUid(),userid,link_happy);
-
-
-
-                    }});
-
+                    public void onSuccess(Uri uri) {
+                        String link_happy = uri.toString();
+                        sendMessage(fuser.getUid(), userid, link_happy);
+                    }
+                });
             }
         });
         button_load2.setOnClickListener(new View.OnClickListener() {
@@ -250,12 +211,11 @@ public class MessageActivity extends AppCompatActivity {
             public void onClick(View v) {
                 storageRef.child("embarrassed.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
-                    public void onSuccess(Uri uri) { String link_happy = uri.toString();
-
-                        sendMessage(fuser.getUid(),userid,link_happy);
-
-
-                    }});
+                    public void onSuccess(Uri uri) {
+                        String link_happy = uri.toString();
+                        sendMessage(fuser.getUid(), userid, link_happy);
+                    }
+                });
 
             }
         });
@@ -264,12 +224,11 @@ public class MessageActivity extends AppCompatActivity {
             public void onClick(View v) {
                 storageRef.child("goodbye.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
-                    public void onSuccess(Uri uri) { String link_happy = uri.toString();
-
-                        sendMessage(fuser.getUid(),userid,link_happy);
-
-
-                    }});
+                    public void onSuccess(Uri uri) {
+                        String link_happy = uri.toString();
+                        sendMessage(fuser.getUid(), userid, link_happy);
+                    }
+                });
 
             }
         });
@@ -278,43 +237,41 @@ public class MessageActivity extends AppCompatActivity {
             public void onClick(View v) {
                 storageRef.child("in-love.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
-                    public void onSuccess(Uri uri) { String link_happy = uri.toString();
-
-                        sendMessage(fuser.getUid(),userid,link_happy);
-
-
-                    }});
+                    public void onSuccess(Uri uri) {
+                        String link_happy = uri.toString();
+                        sendMessage(fuser.getUid(), userid, link_happy);
+                    }
+                });
 
             }
         });
-
     }
 
-    private void sendMessage(String sender,String receiver,String message){
+    private void sendMessage(String sender, String receiver, String message) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        HashMap<String,Object> hashMap = new HashMap<>();
-        hashMap.put("sender",sender);
-        hashMap.put("receiver",receiver);
-        hashMap.put("message",message);
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("sender", sender);
+        hashMap.put("receiver", receiver);
+        hashMap.put("message", message);
         reference.child("Chats").push().setValue(hashMap);
     }
 
-    private void readMessage(String myid,String userid,String imageurl){
+    private void readMessage(String myid, String userid, String imageurl) {
         mchat = new ArrayList<>();
-        reference =FirebaseDatabase.getInstance().getReference("Chats");
+        reference = FirebaseDatabase.getInstance().getReference("Chats");
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 mchat.clear();
-                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
-                    Chat chat =snapshot.getValue(Chat.class);
+                    Chat chat = snapshot.getValue(Chat.class);
 
-                    if(chat.getReceiver().equals(myid)&&chat.getSender().equals(userid)||
-                            chat.getReceiver().equals(userid)&&chat.getSender().equals(myid)){
+                    if (chat.getReceiver().equals(myid) && chat.getSender().equals(userid) ||
+                            chat.getReceiver().equals(userid) && chat.getSender().equals(myid)) {
                         mchat.add(chat);
                     }
-                    messageAdapter = new MessageAdapter(MessageActivity.this,mchat,imageurl);
+                    messageAdapter = new MessageAdapter(MessageActivity.this, mchat, imageurl);
                     recyclerView.setAdapter(messageAdapter);
                 }
             }
@@ -327,7 +284,7 @@ public class MessageActivity extends AppCompatActivity {
 
     }
 
-    }
+}
 
 
 
