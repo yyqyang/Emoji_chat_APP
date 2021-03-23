@@ -8,6 +8,6 @@
 
 ## Work Distribution 
 1. Overall design: yyqyang@, DDG18@, linxinwen@
-2. Send/Receiver messages design and implmenation: yyang@
+2. Send/Receiver messages design and implmenation: yyqyang@
 3. Notification implementation: linxinwen@ DDG18@
 4. Refactoring and reformatting after the initial implementation, bug fixes: linxinwen@ DDG18@
