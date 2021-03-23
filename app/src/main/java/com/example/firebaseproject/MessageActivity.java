@@ -73,6 +73,7 @@ public class MessageActivity extends AppCompatActivity {
 
     FirebaseStorage mStorage;
     StorageReference storageRef;
+    private String receiverUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,7 +184,10 @@ public class MessageActivity extends AppCompatActivity {
         });
 
         intent = getIntent();
-        String userid = intent.getStringExtra("userid");
+
+        // The id of the other user of the chat.
+        String receiverUserid = intent.getStringExtra("userid");
+        getReceiverUserName(receiverUserid);
         fuser = FirebaseAuth.getInstance().getCurrentUser();
         reference = FirebaseDatabase.getInstance().getReference("MyUsers")
                 .child(fuser.getUid());
@@ -191,20 +195,12 @@ public class MessageActivity extends AppCompatActivity {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    Users user = dataSnapshot.getValue(Users.class);
-
-                    //username.setText(user.getUsername());
-
-                    //if (user.getImageURL().equals("default")) {
-                    //    imageView.setImageResource(R.mipmap.ic_launcher);
-                    // } else {
-                    //    Glide.with(MessageActivity.this)
-                    //            .load(user.getImageURL())
-                    //            .into(imageView);
+                if (!dataSnapshot.exists()) {
+                    Log.w(TAG, "Failed finding user info for userId: " + fuser.getUid());
+                    return;
                 }
                 Users user = dataSnapshot.getValue(Users.class);
-                readMessage(fuser.getUid(), userid, user.getImageURL());
+                readMessage(fuser.getUid(), receiverUserid, user.getImageURL());
             }
 
             @Override
@@ -219,10 +215,10 @@ public class MessageActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Uri uri) {
                         String link_happy = uri.toString();
-                        sendMessage(fuser.getUid(), userid, link_happy);
+                        sendMessage(fuser.getUid(), receiverUserid, link_happy);
                     }
                 });
-                sendMessageToDeviceTask(fuser.getEmail(), userid);
+                sendMessageToDeviceTask(fuser.getEmail(), receiverUserid);
             }
         });
         button_load2.setOnClickListener(new View.OnClickListener() {
@@ -232,10 +228,10 @@ public class MessageActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Uri uri) {
                         String link_happy = uri.toString();
-                        sendMessage(fuser.getUid(), userid, link_happy);
+                        sendMessage(fuser.getUid(), receiverUserid, link_happy);
                     }
                 });
-                sendMessageToDeviceTask(fuser.getEmail(), userid);
+                sendMessageToDeviceTask(fuser.getEmail(), receiverUserid);
             }
         });
         button_load3.setOnClickListener(new View.OnClickListener() {
@@ -245,10 +241,10 @@ public class MessageActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Uri uri) {
                         String link_happy = uri.toString();
-                        sendMessage(fuser.getUid(), userid, link_happy);
+                        sendMessage(fuser.getUid(), receiverUserid, link_happy);
                     }
                 });
-                sendMessageToDeviceTask(fuser.getEmail(), userid);
+                sendMessageToDeviceTask(fuser.getEmail(), receiverUserid);
             }
         });
         button_load4.setOnClickListener(new View.OnClickListener() {
@@ -258,10 +254,10 @@ public class MessageActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Uri uri) {
                         String link_happy = uri.toString();
-                        sendMessage(fuser.getUid(), userid, link_happy);
+                        sendMessage(fuser.getUid(), receiverUserid, link_happy);
                     }
                 });
-                sendMessageToDeviceTask(fuser.getEmail(), userid);
+                sendMessageToDeviceTask(fuser.getEmail(), receiverUserid);
             }
         });
     }
@@ -292,6 +288,29 @@ public class MessageActivity extends AppCompatActivity {
                     }
                     messageAdapter = new MessageAdapter(MessageActivity.this, mchat, imageurl);
                     recyclerView.setAdapter(messageAdapter);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+    }
+
+    private void getReceiverUserName(String receiverUserid) {
+        Log.i(TAG, "Finding username for userid: " + receiverUserid);
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("MyUsers")
+                .child(receiverUserid);
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    Users user = dataSnapshot.getValue(Users.class);
+                    Log.i(TAG, "Found username: " + user.getUsername());
+                    receiverUserName = user.getUsername();
+                    if (!receiverUserName.isEmpty()) {
+                        username.setText(receiverUserName);
+                    }
                 }
             }
 
@@ -345,7 +364,7 @@ public class MessageActivity extends AppCompatActivity {
             jNotification.put("sound", "default");
             jNotification.put("badge", "1");
 
-            jdata.put("title", "data title");
+            jdata.put("title", "");
             jdata.put("content", "data content");
 
             // If sending to a single client

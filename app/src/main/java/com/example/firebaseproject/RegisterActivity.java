@@ -24,7 +24,6 @@ import java.util.HashMap;
 public class RegisterActivity extends AppCompatActivity {
     EditText userET;
     EditText emailET;
-    EditText passwordET;
     Button registerBtn;
     FirebaseAuth auth;
     DatabaseReference myRef;
