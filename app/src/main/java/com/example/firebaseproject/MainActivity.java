@@ -1,6 +1,7 @@
 package com.example.firebaseproject;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -11,6 +12,9 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.firebaseproject.Model.Users;
+import com.example.firebaseproject.Notification.DemoMessagingService;
+import com.example.firebaseproject.Notification.Token;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -19,10 +23,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     FirebaseUser firebaseUser;
     DatabaseReference myRef;
@@ -58,6 +66,27 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
+
+        /**
+         * Save the token to db in the main activity as it seems like {@link DemoMessagingService#onNewToken(String)}
+         * doesn't really work?
+         */
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(MainActivity.this, new OnSuccessListener<InstanceIdResult>() {
+            @Override
+            public void onSuccess(InstanceIdResult instanceIdResult) {
+                String token = instanceIdResult.getToken();
+                Log.i(TAG, "Saving token to firebase db: " + token);
+                sendRegistrationToServer(token);
+            }
+        });
+    }
+
+    void sendRegistrationToServer(String token) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
+        Token newToken = new Token(token);
+        Log.i(TAG, "Updated token for " + user.getUid() + ", token: " + token);
+        reference.child(user.getUid()).setValue(newToken);
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {

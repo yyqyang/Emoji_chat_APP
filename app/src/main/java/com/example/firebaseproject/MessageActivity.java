@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.firebaseproject.Model.Chat;
 import com.example.firebaseproject.Model.Users;
+import com.example.firebaseproject.Notification.Token;
 import com.example.firebaseproject.UserAdapter.MessageAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -55,16 +56,15 @@ public class MessageActivity extends AppCompatActivity {
     private static final String TAG = MessageActivity.class.getSimpleName();
 
     private static final String SERVER_KEY = "key=AAAA0XcsDpE:APA91bFKqSVwgB4e38QVH4WWXHjXEFZVqTO5b1HajVuEaSWMGX2L6mEfaBgjqwJDatg9V3hPz8HE2p2Ao7vnGbLaTokN0IwOY9GUpLPszY0wwu9jUOpvkluZVU9b-LM9yb-6ZHHxJeUz";
-    private static final String CLIENT_REGISTRATION_TOKEN = "cUPw0s3VQ5WwM98eegBxOt:APA91bEusIfOReV5o6vPoIiq2Cv3W6wYSjgY-QLfD6C8E2N04uZ1NIj5pSudZPwITGNEZ0JDqEX5Ezm2ZBraCP8i-dYVRy4TV_L_1Eseae5ZxR8IR4tILNzSpXXIl1oZJVJ_v807YFgu";
 
     TextView username;
-    ImageView imageView;
     ImageButton button_load;
     ImageButton button_load2;
     ImageButton button_load3;
     ImageButton button_load4;
     FirebaseUser fuser;
     DatabaseReference reference;
+    DatabaseReference tokenReference;
     Intent intent;
 
     MessageAdapter messageAdapter;
@@ -72,9 +72,7 @@ public class MessageActivity extends AppCompatActivity {
     RecyclerView recyclerView;
 
     FirebaseStorage mStorage;
-    String url;
     StorageReference storageRef;
-    RemoteMessage remoteMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,7 +171,6 @@ public class MessageActivity extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
@@ -190,6 +187,7 @@ public class MessageActivity extends AppCompatActivity {
         fuser = FirebaseAuth.getInstance().getCurrentUser();
         reference = FirebaseDatabase.getInstance().getReference("MyUsers")
                 .child(fuser.getUid());
+
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -206,7 +204,6 @@ public class MessageActivity extends AppCompatActivity {
                     //            .into(imageView);
                 }
                 Users user = dataSnapshot.getValue(Users.class);
-
                 readMessage(fuser.getUid(), userid, user.getImageURL());
             }
 
@@ -225,17 +222,7 @@ public class MessageActivity extends AppCompatActivity {
                         sendMessage(fuser.getUid(), userid, link_happy);
                     }
                 });
-
-//                FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(MessageActivity.this, new OnSuccessListener<InstanceIdResult>() {
-//                    @Override
-//                    public void onSuccess(InstanceIdResult instanceIdResult) {
-//                        String token = instanceIdResult.getToken();
-//                        String msg = getString(R.string.msg_token_fmt, token);
-//                        Log.e("Token", token);
-//                        Toast.makeText(MessageActivity.this, msg, Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-                sendMessageToDeviceTask(CLIENT_REGISTRATION_TOKEN);
+                sendMessageToDeviceTask(fuser.getEmail(), userid);
             }
         });
         button_load2.setOnClickListener(new View.OnClickListener() {
@@ -248,7 +235,7 @@ public class MessageActivity extends AppCompatActivity {
                         sendMessage(fuser.getUid(), userid, link_happy);
                     }
                 });
-                sendMessageToDeviceTask(CLIENT_REGISTRATION_TOKEN);
+                sendMessageToDeviceTask(fuser.getEmail(), userid);
             }
         });
         button_load3.setOnClickListener(new View.OnClickListener() {
@@ -261,7 +248,7 @@ public class MessageActivity extends AppCompatActivity {
                         sendMessage(fuser.getUid(), userid, link_happy);
                     }
                 });
-                sendMessageToDeviceTask(CLIENT_REGISTRATION_TOKEN);
+                sendMessageToDeviceTask(fuser.getEmail(), userid);
             }
         });
         button_load4.setOnClickListener(new View.OnClickListener() {
@@ -274,7 +261,7 @@ public class MessageActivity extends AppCompatActivity {
                         sendMessage(fuser.getUid(), userid, link_happy);
                     }
                 });
-                sendMessageToDeviceTask(CLIENT_REGISTRATION_TOKEN);
+                sendMessageToDeviceTask(fuser.getEmail(), userid);
             }
         });
     }
@@ -310,46 +297,56 @@ public class MessageActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
-
     }
 
-    public void sendMessageToDeviceTask(String token) {
-        new Thread(new Runnable() {
+    /**
+     * Send notification to user with the given receiverId
+     */
+    public void sendMessageToDeviceTask(String senderId, String receiverId) {
+        // Get the client token of the user to send notification to
+        tokenReference = FirebaseDatabase.getInstance().getReference("Tokens")
+                .child(receiverId);
+        tokenReference.addValueEventListener(new ValueEventListener() {
             @Override
-            public void run() {
-                sendMessageToDevice(token);
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    Log.w(TAG,"Token data does not exist for user: " + receiverId);
+                    return;
+                }
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(TAG, "Sending notification to " + receiverId);
+                        Token token = snapshot.getValue(Token.class);
+                        sendMessageToDevice(token.getToken(), senderId);
+                    }
+                }).start();
             }
-        }).start();
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
     }
 
     /**
      * Pushes a notification to a given device-- in particular, this device,
      * because that's what the instanceID token is defined to be.
      */
-    private void sendMessageToDevice(String targetToken) {
+    private void sendMessageToDevice(String targetToken, String senderId) {
         JSONObject jPayload = new JSONObject();
         JSONObject jNotification = new JSONObject();
         JSONObject jdata = new JSONObject();
         try {
-            jNotification.put("title", "Message Title");
-            jNotification.put("body", "Message body ");
+            jNotification.put("title", "Got a message from " + senderId);
+            jNotification.put("body", "Got a new sticker");
             jNotification.put("sound", "default");
             jNotification.put("badge", "1");
-            /*
-            // We can add more details into the notification if we want.
-            // We happen to be ignoring them for this demo.
-            jNotification.put("click_action", "OPEN_ACTIVITY_1");
-            */
+
             jdata.put("title", "data title");
             jdata.put("content", "data content");
-
-            /***
-             * The Notification object is now populated.
-             * Next, build the Payload that we send to the server.
-             */
 
             // If sending to a single client
             jPayload.put("to", targetToken); // CLIENT_REGISTRATION_TOKEN);
@@ -382,7 +379,7 @@ public class MessageActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     Log.i(TAG, "run: " + resp);
-                    Toast.makeText(MessageActivity.this, resp, Toast.LENGTH_LONG).show();
+                    // Toast.makeText(MessageActivity.this, resp, Toast.LENGTH_LONG).show();
                 }
             });
             Log.i(TAG, "Successfully sent notification to client: " + targetToken);
